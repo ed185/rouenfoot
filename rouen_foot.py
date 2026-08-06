@@ -151,7 +151,20 @@ def historique_rangs(data, seuil=1):
 # ----------------------------------------------------------------
 # Interface
 # ----------------------------------------------------------------
-st.title("⚽ Classement foot - Le Five - Saison 2026-2027")
+st.markdown(
+    """
+    <style>
+    .app-title {
+        font-size: clamp(1.3rem, 4.5vw, 2.3rem);
+        font-weight: 700;
+        line-height: 1.25;
+        margin-bottom: 0.75rem;
+    }
+    </style>
+    <div class="app-title">⚽ Classement Foot - Le Five - Saison 2026-2027</div>
+    """,
+    unsafe_allow_html=True,
+)
 
 tab_classement, tab_match, tab_joueurs, tab_evolution = st.tabs(
     ["🏆 Classement", "🆕 Nouveau match", "👥 Joueurs", "📈 Évolution"]
@@ -188,19 +201,34 @@ with tab_classement:
                     return "color: #c62828; font-weight: bold"
                 return ""
 
+            vue_detaillee = st.checkbox("Afficher le détail (matchs joués, victoires, nuls)", value=False)
+
+            if vue_detaillee:
+                colonnes = ["Joueur", "Points", "Matchs joués", "Victoires", "Nuls", "% Points", "Évolution"]
+            else:
+                colonnes = ["Joueur", "Points", "% Points", "Évolution"]
+
+            df_affiche = df_classement[colonnes]
+
             try:
-                styled = df_classement.style.map(style_evolution, subset=["Évolution"])
+                styled = df_affiche.style.map(style_evolution, subset=["Évolution"])
             except AttributeError:
-                styled = df_classement.style.applymap(style_evolution, subset=["Évolution"])
+                # Compatibilité avec les anciennes versions de pandas (< 2.1)
+                styled = df_affiche.style.applymap(style_evolution, subset=["Évolution"])
 
             st.dataframe(
                 styled,
                 use_container_width=True,
                 column_config={
-                    "% Points": st.column_config.NumberColumn(format="%.1f %%"),
+                    "Points": st.column_config.NumberColumn("Pts"),
+                    "Matchs joués": st.column_config.NumberColumn("MJ"),
+                    "Victoires": st.column_config.NumberColumn("V"),
+                    "Nuls": st.column_config.NumberColumn("N"),
+                    "% Points": st.column_config.NumberColumn("%", format="%.0f %%"),
+                    "Évolution": st.column_config.TextColumn("Évol."),
                 },
             )
-            st.caption("🔼 gagné des places · 🔽 perdu des places · ➖ stable · 🆕 nouveau joueur — comparé au classement avant le dernier match")
+            st.caption("🔼 hausse · 🔽 baisse · ➖ stable · 🆕 nouveau — vs. avant le dernier match")
 
             st.divider()
             col1, col2, col3 = st.columns(3)
@@ -343,20 +371,28 @@ with tab_evolution:
                 rang_max = int(df_filtre["Rang"].max())
                 chart = (
                     alt.Chart(df_filtre)
-                    .mark_line(point=True)
+                    .mark_line(point=alt.OverlayMarkDef(size=45), strokeWidth=2.5)
                     .encode(
-                        x=alt.X("Match:O", title="Match n°"),
+                        x=alt.X("Match:O", title="Match n°", axis=alt.Axis(labelAngle=0)),
                         y=alt.Y(
                             "Rang:Q",
-                            title="Rang (1 = premier)",
+                            title="Rang",
                             scale=alt.Scale(domain=[rang_max + 0.5, 0.5]),
                             axis=alt.Axis(tickMinStep=1),
                         ),
-                        color=alt.Color("Joueur:N", title="Joueur"),
+                        color=alt.Color("Joueur:N", title=None),
                         tooltip=["Joueur", "Match", "Rang", "Points"],
                     )
-                    .properties(height=420)
+                    .properties(height=480)
+                    .configure_axis(labelFontSize=11, titleFontSize=12)
+                    .configure_legend(
+                        orient="bottom",
+                        columns=3,
+                        labelFontSize=11,
+                        symbolSize=60,
+                        labelLimit=100,
+                    )
                     .interactive()
                 )
                 st.altair_chart(chart, use_container_width=True)
-                st.caption("Le rang 1 (meilleur) est en haut du graphique.")
+                st.caption("Le rang 1 (meilleur) est en haut du graphique. Pince pour zoomer, glisse pour te déplacer.")
