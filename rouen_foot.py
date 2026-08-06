@@ -188,7 +188,10 @@ with tab_classement:
                     return "color: #c62828; font-weight: bold"
                 return ""
 
-            styled = df_classement.style.applymap(style_evolution, subset=["Évolution"])
+            try:
+               styled = df_classement.style.map(style_evolution, subset=["Évolution"])
+           except AttributeError:
+               styled = df_classement.style.applymap(style_evolution, subset=["Évolution"])
 
             st.dataframe(
                 styled,
