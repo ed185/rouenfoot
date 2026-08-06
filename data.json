@@ -1,0 +1,298 @@
+{
+  "joueurs": [
+    "Edouard",
+    "Martin",
+    "Mathieu",
+    "Laurent V",
+    "Laulau",
+    "Clément",
+    "Xavier",
+    "Adrien",
+    "Axel",
+    "Paco",
+    "Ilyas"
+  ],
+  "matchs": [
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard"
+      ],
+      "equipe_b": [
+        "Martin"
+      ],
+      "gagnant": "A"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard"
+      ],
+      "equipe_b": [
+        "Martin"
+      ],
+      "gagnant": "B"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard"
+      ],
+      "equipe_b": [
+        "Martin"
+      ],
+      "gagnant": "B"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Mathieu",
+        "Laulau",
+        "Adrien"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Xavier",
+        "Paco",
+        "Axel"
+      ],
+      "gagnant": "A"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Adrien",
+        "Axel"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Xavier",
+        "Paco",
+        "Laulau",
+        "Mathieu"
+      ],
+      "gagnant": "B"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Paco",
+        "Mathieu",
+        "Adrien",
+        "Martin"
+      ],
+      "equipe_b": [
+        "Laurent V",
+        "Laulau",
+        "Xavier",
+        "Axel",
+        "Clément"
+      ],
+      "gagnant": "A"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Paco",
+        "Mathieu",
+        "Adrien",
+        "Martin"
+      ],
+      "equipe_b": [
+        "Laurent V",
+        "Laulau",
+        "Xavier",
+        "Axel",
+        "Clément"
+      ],
+      "gagnant": "Nul"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Martin"
+      ],
+      "equipe_b": [
+        "Mathieu"
+      ],
+      "gagnant": "A"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Martin",
+        "Ilyas"
+      ],
+      "equipe_b": [
+        "Mathieu"
+      ],
+      "gagnant": "A"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Mathieu",
+        "Clément",
+        "Axel",
+        "Ilyas"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Laurent V",
+        "Laulau",
+        "Xavier",
+        "Paco"
+      ],
+      "gagnant": "B"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Mathieu",
+        "Clément",
+        "Axel",
+        "Ilyas"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Laurent V",
+        "Laulau",
+        "Xavier",
+        "Paco"
+      ],
+      "gagnant": "B"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Mathieu",
+        "Clément",
+        "Axel",
+        "Ilyas"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Laurent V",
+        "Laulau",
+        "Xavier",
+        "Paco"
+      ],
+      "gagnant": "Nul"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Mathieu",
+        "Clément",
+        "Axel",
+        "Ilyas"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Laurent V",
+        "Laulau",
+        "Xavier",
+        "Paco"
+      ],
+      "gagnant": "A"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Mathieu",
+        "Axel",
+        "Ilyas",
+        "Laulau"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Laurent V",
+        "Xavier",
+        "Paco",
+        "Clément"
+      ],
+      "gagnant": "A"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Mathieu",
+        "Axel",
+        "Ilyas",
+        "Laulau"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Laurent V",
+        "Xavier",
+        "Paco",
+        "Clément"
+      ],
+      "gagnant": "Nul"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Mathieu",
+        "Axel",
+        "Ilyas",
+        "Laulau"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Laurent V",
+        "Xavier",
+        "Paco",
+        "Clément"
+      ],
+      "gagnant": "B"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Mathieu",
+        "Axel",
+        "Ilyas",
+        "Laulau"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Laurent V",
+        "Xavier",
+        "Paco",
+        "Clément"
+      ],
+      "gagnant": "B"
+    },
+    {
+      "date": "2026-08-06",
+      "equipe_a": [
+        "Edouard",
+        "Mathieu",
+        "Axel",
+        "Ilyas",
+        "Laulau"
+      ],
+      "equipe_b": [
+        "Martin",
+        "Laurent V",
+        "Xavier",
+        "Paco",
+        "Clément"
+      ],
+      "gagnant": "B"
+    }
+  ]
+}
