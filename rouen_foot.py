@@ -340,6 +340,8 @@ with tab_match:
 
         if "buts_en_cours" not in st.session_state:
             st.session_state.buts_en_cours = {}
+        if "csc_en_cours" not in st.session_state:
+            st.session_state.csc_en_cours = {"A": 0, "B": 0}
 
         joueurs_du_match = [j for j in (equipe_a + equipe_b) if not doublons]
 
@@ -373,8 +375,24 @@ with tab_match:
                             st.session_state.buts_en_cours[joueur] = nb + 1
                             st.rerun()
 
-            score_a = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_a)
-            score_b = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_b)
+                # Bouton CSC pour cette équipe (un but contre son camp profite à l'équipe adverse)
+                nb_csc = st.session_state.csc_en_cours.get(team_code, 0)
+                with st.container(key=f"but_row_CSC_{team_code}"):
+                    col_nom_csc, col_moins_csc, col_plus_csc = st.columns([3, 1, 1])
+                    col_nom_csc.markdown(
+                        f"<div class='nom-joueur'>⚠️ CSC — <span class='but-count'>{nb_csc}</span></div>",
+                        unsafe_allow_html=True,
+                    )
+                    if col_moins_csc.button("−", key=f"csc_moins_{team_code}"):
+                        st.session_state.csc_en_cours[team_code] = max(0, nb_csc - 1)
+                        st.rerun()
+                    if col_plus_csc.button("+", key=f"csc_plus_{team_code}", type="primary"):
+                        st.session_state.csc_en_cours[team_code] = nb_csc + 1
+                        st.rerun()
+
+            # Un CSC de l'équipe A profite à l'équipe B, et inversement
+            score_a = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_a) + st.session_state.csc_en_cours.get("B", 0)
+            score_b = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_b) + st.session_state.csc_en_cours.get("A", 0)
 
             if score_a > score_b:
                 resultat_auto = "🏆 Équipe A gagne"
@@ -395,8 +413,10 @@ with tab_match:
                 st.error(f"Un joueur ne peut pas être dans les deux équipes : {', '.join(doublons)}")
             else:
                 buteurs = {j: nb for j, nb in st.session_state.buts_en_cours.items() if nb > 0}
-                score_a = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_a)
-                score_b = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_b)
+                csc_a = st.session_state.csc_en_cours.get("A", 0)
+                csc_b = st.session_state.csc_en_cours.get("B", 0)
+                score_a = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_a) + csc_b
+                score_b = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_b) + csc_a
 
                 if score_a > score_b:
                     gagnant = "A"
@@ -414,10 +434,13 @@ with tab_match:
                         "buteurs": buteurs,
                         "score_a": score_a,
                         "score_b": score_b,
+                        "csc_a": csc_a,
+                        "csc_b": csc_b,
                     }
                 )
                 save_data(data)
                 st.session_state.buts_en_cours = {}
+                st.session_state.csc_en_cours = {"A": 0, "B": 0}
                 st.success("Match enregistré !")
                 st.rerun()
 
@@ -454,6 +477,16 @@ with tab_match:
                     st.write("**⚽ Buteurs :** " + ", ".join(
                         f"{j} ({n})" for j, n in sorted(buteurs.items(), key=lambda x: -x[1])
                     ))
+
+                csc_a = m.get("csc_a", 0)
+                csc_b = m.get("csc_b", 0)
+                if csc_a or csc_b:
+                    parts = []
+                    if csc_a:
+                        parts.append(f"Équipe A x{csc_a}")
+                    if csc_b:
+                        parts.append(f"Équipe B x{csc_b}")
+                    st.write("**⚠️ CSC :** " + ", ".join(parts))
 
                 if st.button("🗑️ Supprimer ce match", key=f"del_match_{idx}"):
                     data["matchs"].remove(m)
