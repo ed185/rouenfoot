@@ -148,6 +148,32 @@ def historique_rangs(data, seuil=1):
     return pd.DataFrame(lignes)
 
 
+def calculer_buteurs(data):
+    buts_total = {j: 0 for j in data["joueurs"]}
+    matchs_avec_but = {j: 0 for j in data["joueurs"]}
+
+    for match in data["matchs"]:
+        for joueur, nb in match.get("buteurs", {}).items():
+            if joueur in buts_total and nb > 0:
+                buts_total[joueur] += nb
+                matchs_avec_but[joueur] += 1
+
+    lignes = [
+        {
+            "Joueur": j,
+            "Buts": b,
+            "Buts/match": round(b / matchs_avec_but[j], 2) if matchs_avec_but[j] > 0 else 0.0,
+        }
+        for j, b in buts_total.items()
+        if b > 0
+    ]
+    df = pd.DataFrame(lignes)
+    if not df.empty:
+        df = df.sort_values(by="Buts", ascending=False).reset_index(drop=True)
+        df.index = df.index + 1
+    return df
+
+
 # ----------------------------------------------------------------
 # Interface
 # ----------------------------------------------------------------
@@ -166,8 +192,8 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-tab_classement, tab_match, tab_joueurs, tab_evolution = st.tabs(
-    ["🏆 Classement", "🆕 Nouveau match", "👥 Joueurs", "📈 Évolution"]
+tab_classement, tab_match, tab_joueurs, tab_evolution, tab_buteurs = st.tabs(
+    ["🏆 Classement", "🆕 Nouveau match", "👥 Joueurs", "📈 Évolution", "⚽ Buteurs"]
 )
 
 # ------------------------- Onglet Classement -------------------------
@@ -262,21 +288,56 @@ with tab_match:
             horizontal=True,
         )
 
+        # --- Décompte des buts par joueur ---
+        if "buts_en_cours" not in st.session_state:
+            st.session_state.buts_en_cours = {}
+
+        joueurs_du_match = [j for j in (equipe_a + equipe_b) if not doublons]
+
+        # On garde uniquement les compteurs des joueurs actuellement sélectionnés
+        st.session_state.buts_en_cours = {
+            j: st.session_state.buts_en_cours.get(j, 0) for j in joueurs_du_match
+        }
+
+        if joueurs_du_match:
+            st.markdown("**⚽ Buteurs du match**")
+            st.caption("Clique sur ➕ à chaque but marqué par un joueur.")
+
+            for equipe_nom, equipe_liste in [("Équipe A", equipe_a), ("Équipe B", equipe_b)]:
+                if not equipe_liste:
+                    continue
+                st.write(f"*{equipe_nom}*")
+                for joueur in equipe_liste:
+                    c1, c2, c3, c4 = st.columns([3, 1, 1, 1])
+                    c1.write(joueur)
+                    c2.write(f"⚽ {st.session_state.buts_en_cours.get(joueur, 0)}")
+                    if c3.button("➕", key=f"but_plus_{joueur}"):
+                        st.session_state.buts_en_cours[joueur] = st.session_state.buts_en_cours.get(joueur, 0) + 1
+                        st.rerun()
+                    if c4.button("➖", key=f"but_moins_{joueur}"):
+                        st.session_state.buts_en_cours[joueur] = max(0, st.session_state.buts_en_cours.get(joueur, 0) - 1)
+                        st.rerun()
+
         if st.button("✅ Enregistrer le match", type="primary"):
             if not equipe_a or not equipe_b:
                 st.error("Les deux équipes doivent contenir au moins un joueur.")
             elif doublons:
                 st.error(f"Un joueur ne peut pas être dans les deux équipes : {', '.join(doublons)}")
             else:
+                buteurs = {
+                    j: nb for j, nb in st.session_state.buts_en_cours.items() if nb > 0
+                }
                 data["matchs"].append(
                     {
                         "date": str(match_date),
                         "equipe_a": equipe_a,
                         "equipe_b": equipe_b,
                         "gagnant": gagnant,
+                        "buteurs": buteurs,
                     }
                 )
                 save_data(data)
+                st.session_state.buts_en_cours = {}
                 st.success("Match enregistré !")
                 st.rerun()
 
@@ -296,6 +357,12 @@ with tab_match:
                 col1.write(", ".join(m["equipe_a"]))
                 col2.write("**Équipe B** " + ("🏆" if m["gagnant"] == "B" else "🤝" if m["gagnant"] == "Nul" else ""))
                 col2.write(", ".join(m["equipe_b"]))
+
+                buteurs = m.get("buteurs", {})
+                if buteurs:
+                    st.write("**⚽ Buteurs :** " + ", ".join(
+                        f"{j} ({n})" for j, n in sorted(buteurs.items(), key=lambda x: -x[1])
+                    ))
 
                 if st.button("🗑️ Supprimer ce match", key=f"del_match_{idx}"):
                     data["matchs"].remove(m)
@@ -396,3 +463,26 @@ with tab_evolution:
                 )
                 st.altair_chart(chart, use_container_width=True)
                 st.caption("Le rang 1 (meilleur) est en haut du graphique. Pince pour zoomer, glisse pour te déplacer.")
+
+# ------------------------- Onglet Buteurs -------------------------
+with tab_buteurs:
+    st.subheader("Classement des buteurs")
+
+    df_buteurs = calculer_buteurs(data)
+
+    if df_buteurs.empty:
+        st.info("Aucun but enregistré pour l'instant. Renseigne les buteurs lors de la saisie d'un match.")
+    else:
+        st.dataframe(
+            df_buteurs,
+            use_container_width=True,
+            column_config={
+                "Buts/match": st.column_config.NumberColumn("Buts/match", format="%.2f"),
+            },
+        )
+
+        st.divider()
+        col1, col2 = st.columns(2)
+        top_buteur = df_buteurs.iloc[0]
+        col1.metric("👟 Meilleur buteur", top_buteur["Joueur"], f"{top_buteur['Buts']} buts")
+        col2.metric("Total de buts marqués", int(df_buteurs["Buts"].sum()))
