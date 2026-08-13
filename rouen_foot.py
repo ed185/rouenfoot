@@ -288,42 +288,29 @@ with tab_match:
             horizontal=True,
         )
 
-        # --- Décompte des buts par joueur : équipe A / équipe B en grille CSS (côte à côte même sur mobile) ---
+        # --- Décompte des buts par joueur : équipe A puis équipe B, boutons -/+ scopés proprement ---
         st.markdown(
             """
             <style>
-            /* Transforme le bloc conteneur en grille 2 colonnes (contourne le comportement
-               de st.columns qui s'empile de force sur mobile) */
-            div[class*="st-key-buts_grid"] div[data-testid="stVerticalBlock"]:has(> div[class*="st-key-but_item_"]) {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr;
-                column-gap: 0.6rem;
-                row-gap: 0.4rem;
-                align-items: start;
-            }
-            div[class*="st-key-but_item_A_"] { grid-column: 1; }
-            div[class*="st-key-but_item_B_"] { grid-column: 2; }
-
-            /* Boutons -/+ toujours côte à côte à l'intérieur de chaque carte joueur */
-            div[class*="st-key-but_item_"] div[data-testid="stHorizontalBlock"] {
+            div[class*="st-key-but_row_"] div[data-testid="stHorizontalBlock"] {
                 flex-wrap: nowrap !important;
-                gap: 0.4rem !important;
+                gap: 0.5rem !important;
             }
-            div[class*="st-key-but_item_"] div[data-testid="stColumn"] {
+            div[class*="st-key-but_row_"] div[data-testid="stColumn"] {
                 width: 50% !important;
                 flex: 1 1 50% !important;
                 min-width: 0 !important;
             }
-            div[class*="st-key-but_item_"] div[data-testid="stButton"] {
+            div[class*="st-key-but_row_"] div[data-testid="stButton"] {
                 display: flex;
                 justify-content: center;
             }
-            div[class*="st-key-but_item_"] div[data-testid="stButton"] button {
-                font-size: 1.2rem;
+            div[class*="st-key-but_row_"] div[data-testid="stButton"] button {
+                font-size: 1.3rem;
                 font-weight: 700;
-                padding: 0.25rem 0;
-                min-height: 2rem;
-                width: 100%;
+                padding: 0.3rem 0;
+                min-height: 2.2rem;
+                width: 3rem;
             }
             button[kind="primary"] {
                 background-color: #2e7d32 !important;
@@ -352,35 +339,29 @@ with tab_match:
 
         if joueurs_du_match:
             st.markdown("**⚽ Buts marqués**")
-            st.caption("🅰️ Équipe A à gauche · 🅱️ Équipe B à droite")
 
-            # Position exacte (colonne + ligne) de chaque joueur dans la grille CSS,
-            # pour que les deux équipes soient bien alignées côte à côte.
-            regles_position = []
-            for team_code, equipe_liste in [("A", equipe_a), ("B", equipe_b)]:
-                colonne = 1 if team_code == "A" else 2
-                for i in range(len(equipe_liste)):
-                    regles_position.append(
-                        f'div[class*="st-key-but_item_{team_code}_{i}"] {{ grid-column: {colonne}; grid-row: {i + 1}; }}'
+            for team_code, equipe_nom, equipe_liste in [
+                ("A", "🅰️ Équipe A", equipe_a),
+                ("B", "🅱️ Équipe B", equipe_b),
+            ]:
+                if not equipe_liste:
+                    continue
+                st.markdown(f"##### {equipe_nom}")
+                for i, joueur in enumerate(equipe_liste):
+                    nb = st.session_state.buts_en_cours.get(joueur, 0)
+                    st.markdown(
+                        f"<div style='font-weight:700;'>{joueur} — ⚽ {nb}</div>",
+                        unsafe_allow_html=True,
                     )
-            st.markdown(f"<style>{' '.join(regles_position)}</style>", unsafe_allow_html=True)
-
-            with st.container(key="buts_grid"):
-                for team_code, equipe_liste in [("A", equipe_a), ("B", equipe_b)]:
-                    for i, joueur in enumerate(equipe_liste):
-                        with st.container(key=f"but_item_{team_code}_{i}"):
-                            nb = st.session_state.buts_en_cours.get(joueur, 0)
-                            st.markdown(
-                                f"<div style='text-align:center; font-weight:700; font-size:0.9rem;'>{joueur}<br>⚽ {nb}</div>",
-                                unsafe_allow_html=True,
-                            )
-                            sub1, sub2 = st.columns(2)
-                            if sub1.button("−", key=f"but_moins_{team_code}_{i}"):
-                                st.session_state.buts_en_cours[joueur] = max(0, nb - 1)
-                                st.rerun()
-                            if sub2.button("+", key=f"but_plus_{team_code}_{i}", type="primary"):
-                                st.session_state.buts_en_cours[joueur] = nb + 1
-                                st.rerun()
+                    with st.container(key=f"but_row_{team_code}_{i}"):
+                        sub1, sub2 = st.columns(2)
+                        if sub1.button("−", key=f"but_moins_{team_code}_{i}"):
+                            st.session_state.buts_en_cours[joueur] = max(0, nb - 1)
+                            st.rerun()
+                        if sub2.button("+", key=f"but_plus_{team_code}_{i}", type="primary"):
+                            st.session_state.buts_en_cours[joueur] = nb + 1
+                            st.rerun()
+                    st.write("")
 
         if st.button("✅ Enregistrer le match"):
             if not equipe_a or not equipe_b:
