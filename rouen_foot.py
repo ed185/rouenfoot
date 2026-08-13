@@ -288,25 +288,43 @@ with tab_match:
             horizontal=True,
         )
 
-        # --- Décompte des buts par joueur (2 colonnes, bouton + en vert) ---
+        # --- Décompte des buts par joueur (2 colonnes forcées, bouton + en vert/blanc) ---
         st.markdown(
             """
             <style>
-            div[data-testid="stButton"] button {
-                font-size: 1.5rem;
+            /* Empêche les colonnes de cette section de s'empiler sur mobile */
+            .buts-section-marker + div[data-testid="stHorizontalBlock"],
+            .buts-section-marker + div[data-testid="stHorizontalBlock"] div[data-testid="stHorizontalBlock"] {
+                flex-wrap: nowrap !important;
+                gap: 0.5rem !important;
+            }
+            .buts-section-marker + div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
+            .buts-section-marker + div[data-testid="stHorizontalBlock"] div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+                width: 50% !important;
+                flex: 1 1 50% !important;
+                min-width: 0 !important;
+            }
+            /* Boutons +/- de cette section uniquement : plus petits, centrés */
+            .buts-section-marker + div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] {
+                display: flex;
+                justify-content: center;
+            }
+            .buts-section-marker + div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button {
+                font-size: 1.3rem;
                 font-weight: 700;
-                padding: 0.5rem 0;
-                min-height: 2.8rem;
+                padding: 0.3rem 0;
+                min-height: 2.2rem;
+                width: 3rem;
             }
             button[kind="primary"] {
                 background-color: #2e7d32 !important;
                 border-color: #2e7d32 !important;
-                color: white !important;
+                color: #ffffff !important;
             }
             button[kind="primary"]:hover {
                 background-color: #1b5e20 !important;
                 border-color: #1b5e20 !important;
-                color: white !important;
+                color: #ffffff !important;
             }
             </style>
             """,
@@ -325,6 +343,7 @@ with tab_match:
 
         if joueurs_du_match:
             st.markdown("**⚽ Buts marqués**")
+            st.markdown('<div class="buts-section-marker"></div>', unsafe_allow_html=True)
 
             col_buts_a, col_buts_b = st.columns(2)
 
@@ -343,10 +362,10 @@ with tab_match:
                             unsafe_allow_html=True,
                         )
                         sub1, sub2 = st.columns(2)
-                        if sub1.button("➖", key=f"but_moins_{joueur}", use_container_width=True):
+                        if sub1.button("−", key=f"but_moins_{joueur}"):
                             st.session_state.buts_en_cours[joueur] = max(0, nb - 1)
                             st.rerun()
-                        if sub2.button("➕", key=f"but_plus_{joueur}", use_container_width=True, type="primary"):
+                        if sub2.button("+", key=f"but_plus_{joueur}", type="primary"):
                             st.session_state.buts_en_cours[joueur] = nb + 1
                             st.rerun()
                         st.write("")
