@@ -281,13 +281,6 @@ with tab_match:
         # Vérification des doublons entre équipes
         doublons = set(equipe_a) & set(equipe_b)
 
-        gagnant = st.radio(
-            "Résultat",
-            options=["A", "B", "Nul"],
-            format_func=lambda x: f"Équipe {x}" if x != "Nul" else "Match nul",
-            horizontal=True,
-        )
-
         # --- Décompte des buts par joueur : nom + boutons -/+ sur la même ligne ---
         st.markdown(
             """
@@ -377,8 +370,16 @@ with tab_match:
 
             score_a = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_a)
             score_b = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_b)
+
+            if score_a > score_b:
+                resultat_auto = "🏆 Équipe A gagne"
+            elif score_b > score_a:
+                resultat_auto = "🏆 Équipe B gagne"
+            else:
+                resultat_auto = "🤝 Match nul"
+
             st.markdown(
-                f"<div style='text-align:center; font-size:1.4rem; font-weight:800; margin:0.5rem 0;'>Score : {score_a} − {score_b}</div>",
+                f"<div style='text-align:center; font-size:1.4rem; font-weight:800; margin:0.5rem 0;'>Score : {score_a} − {score_b}<br><span style='font-size:1rem; font-weight:600;'>{resultat_auto}</span></div>",
                 unsafe_allow_html=True,
             )
 
@@ -391,6 +392,14 @@ with tab_match:
                 buteurs = {j: nb for j, nb in st.session_state.buts_en_cours.items() if nb > 0}
                 score_a = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_a)
                 score_b = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_b)
+
+                if score_a > score_b:
+                    gagnant = "A"
+                elif score_b > score_a:
+                    gagnant = "B"
+                else:
+                    gagnant = "Nul"
+
                 data["matchs"].append(
                     {
                         "date": str(match_date),
