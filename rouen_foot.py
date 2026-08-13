@@ -288,15 +288,25 @@ with tab_match:
             horizontal=True,
         )
 
-        # --- Décompte des buts par joueur (gros boutons, équipes séparées) ---
+        # --- Décompte des buts par joueur (2 colonnes, bouton + en vert) ---
         st.markdown(
             """
             <style>
             div[data-testid="stButton"] button {
-                font-size: 1.6rem;
+                font-size: 1.5rem;
                 font-weight: 700;
-                padding: 0.6rem 0;
-                min-height: 3rem;
+                padding: 0.5rem 0;
+                min-height: 2.8rem;
+            }
+            button[kind="primary"] {
+                background-color: #2e7d32 !important;
+                border-color: #2e7d32 !important;
+                color: white !important;
+            }
+            button[kind="primary"]:hover {
+                background-color: #1b5e20 !important;
+                border-color: #1b5e20 !important;
+                color: white !important;
             }
             </style>
             """,
@@ -316,26 +326,32 @@ with tab_match:
         if joueurs_du_match:
             st.markdown("**⚽ Buts marqués**")
 
-            for equipe_nom, equipe_liste in [("🅰️ Équipe A", equipe_a), ("🅱️ Équipe B", equipe_b)]:
-                if not equipe_liste:
-                    continue
-                st.markdown(f"##### {equipe_nom}")
-                for joueur in equipe_liste:
-                    nb = st.session_state.buts_en_cours.get(joueur, 0)
-                    c1, c2, c3 = st.columns([1, 1.4, 1])
-                    if c1.button("➖", key=f"but_moins_{joueur}", use_container_width=True):
-                        st.session_state.buts_en_cours[joueur] = max(0, nb - 1)
-                        st.rerun()
-                    c2.markdown(
-                        f"<div style='text-align:center; font-size:1.3rem; font-weight:700; padding-top:0.5rem;'>{joueur}<br>⚽ {nb}</div>",
-                        unsafe_allow_html=True,
-                    )
-                    if c3.button("➕", key=f"but_plus_{joueur}", use_container_width=True):
-                        st.session_state.buts_en_cours[joueur] = nb + 1
-                        st.rerun()
-                st.write("")
+            col_buts_a, col_buts_b = st.columns(2)
 
-        if st.button("✅ Enregistrer le match", type="primary"):
+            for col, equipe_nom, equipe_liste in [
+                (col_buts_a, "🅰️ Équipe A", equipe_a),
+                (col_buts_b, "🅱️ Équipe B", equipe_b),
+            ]:
+                with col:
+                    if not equipe_liste:
+                        continue
+                    st.markdown(f"##### {equipe_nom}")
+                    for joueur in equipe_liste:
+                        nb = st.session_state.buts_en_cours.get(joueur, 0)
+                        st.markdown(
+                            f"<div style='text-align:center; font-weight:700;'>{joueur}<br>⚽ {nb}</div>",
+                            unsafe_allow_html=True,
+                        )
+                        sub1, sub2 = st.columns(2)
+                        if sub1.button("➖", key=f"but_moins_{joueur}", use_container_width=True):
+                            st.session_state.buts_en_cours[joueur] = max(0, nb - 1)
+                            st.rerun()
+                        if sub2.button("➕", key=f"but_plus_{joueur}", use_container_width=True, type="primary"):
+                            st.session_state.buts_en_cours[joueur] = nb + 1
+                            st.rerun()
+                        st.write("")
+
+        if st.button("✅ Enregistrer le match"):
             if not equipe_a or not equipe_b:
                 st.error("Les deux équipes doivent contenir au moins un joueur.")
             elif doublons:
