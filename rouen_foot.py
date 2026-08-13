@@ -288,35 +288,26 @@ with tab_match:
             horizontal=True,
         )
 
-        # --- Décompte des buts par joueur ---
-        if "buts_en_cours" not in st.session_state:
-            st.session_state.buts_en_cours = {}
-
+        # --- Décompte des buts par joueur (version compacte) ---
         joueurs_du_match = [j for j in (equipe_a + equipe_b) if not doublons]
 
-        # On garde uniquement les compteurs des joueurs actuellement sélectionnés
-        st.session_state.buts_en_cours = {
-            j: st.session_state.buts_en_cours.get(j, 0) for j in joueurs_du_match
-        }
-
+        buteurs = {}
         if joueurs_du_match:
-            st.markdown("**⚽ Buteurs du match**")
-            st.caption("Clique sur ➕ à chaque but marqué par un joueur.")
-
-            for equipe_nom, equipe_liste in [("Équipe A", equipe_a), ("Équipe B", equipe_b)]:
-                if not equipe_liste:
-                    continue
-                st.write(f"*{equipe_nom}*")
-                for joueur in equipe_liste:
-                    c1, c2, c3, c4 = st.columns([3, 1, 1, 1])
-                    c1.write(joueur)
-                    c2.write(f"⚽ {st.session_state.buts_en_cours.get(joueur, 0)}")
-                    if c3.button("➕", key=f"but_plus_{joueur}"):
-                        st.session_state.buts_en_cours[joueur] = st.session_state.buts_en_cours.get(joueur, 0) + 1
-                        st.rerun()
-                    if c4.button("➖", key=f"but_moins_{joueur}"):
-                        st.session_state.buts_en_cours[joueur] = max(0, st.session_state.buts_en_cours.get(joueur, 0) - 1)
-                        st.rerun()
+            st.markdown("**⚽ Buts marqués**")
+            for joueur in equipe_a:
+                nb = st.number_input(
+                    f"🅰️ {joueur}", min_value=0, step=1, value=0,
+                    key=f"but_{joueur}", label_visibility="visible",
+                )
+                if nb > 0:
+                    buteurs[joueur] = nb
+            for joueur in equipe_b:
+                nb = st.number_input(
+                    f"🅱️ {joueur}", min_value=0, step=1, value=0,
+                    key=f"but_{joueur}", label_visibility="visible",
+                )
+                if nb > 0:
+                    buteurs[joueur] = nb
 
         if st.button("✅ Enregistrer le match", type="primary"):
             if not equipe_a or not equipe_b:
@@ -324,9 +315,6 @@ with tab_match:
             elif doublons:
                 st.error(f"Un joueur ne peut pas être dans les deux équipes : {', '.join(doublons)}")
             else:
-                buteurs = {
-                    j: nb for j, nb in st.session_state.buts_en_cours.items() if nb > 0
-                }
                 data["matchs"].append(
                     {
                         "date": str(match_date),
@@ -337,7 +325,8 @@ with tab_match:
                     }
                 )
                 save_data(data)
-                st.session_state.buts_en_cours = {}
+                for j in joueurs_du_match:
+                    st.session_state.pop(f"but_{j}", None)
                 st.success("Match enregistré !")
                 st.rerun()
 
