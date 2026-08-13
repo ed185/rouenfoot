@@ -288,17 +288,24 @@ with tab_match:
             horizontal=True,
         )
 
-        # --- Décompte des buts par joueur : équipe A puis équipe B, boutons -/+ scopés proprement ---
+        # --- Décompte des buts par joueur : nom + boutons -/+ sur la même ligne ---
         st.markdown(
             """
             <style>
             div[class*="st-key-but_row_"] div[data-testid="stHorizontalBlock"] {
                 flex-wrap: nowrap !important;
                 gap: 0.5rem !important;
+                align-items: center !important;
             }
-            div[class*="st-key-but_row_"] div[data-testid="stColumn"] {
-                width: 50% !important;
-                flex: 1 1 50% !important;
+            div[class*="st-key-but_row_"] div[data-testid="stColumn"]:nth-of-type(1) {
+                width: 60% !important;
+                flex: 1 1 60% !important;
+                min-width: 0 !important;
+            }
+            div[class*="st-key-but_row_"] div[data-testid="stColumn"]:nth-of-type(2),
+            div[class*="st-key-but_row_"] div[data-testid="stColumn"]:nth-of-type(3) {
+                width: 20% !important;
+                flex: 1 1 20% !important;
                 min-width: 0 !important;
             }
             div[class*="st-key-but_row_"] div[data-testid="stButton"] {
@@ -311,6 +318,12 @@ with tab_match:
                 padding: 0.3rem 0;
                 min-height: 2.2rem;
                 width: 3rem;
+            }
+            div[class*="st-key-but_row_"] .nom-joueur {
+                font-weight: 700;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             button[kind="primary"] {
                 background-color: #2e7d32 !important;
@@ -349,19 +362,18 @@ with tab_match:
                 st.markdown(f"##### {equipe_nom}")
                 for i, joueur in enumerate(equipe_liste):
                     nb = st.session_state.buts_en_cours.get(joueur, 0)
-                    st.markdown(
-                        f"<div style='font-weight:700;'>{joueur} — ⚽ {nb}</div>",
-                        unsafe_allow_html=True,
-                    )
                     with st.container(key=f"but_row_{team_code}_{i}"):
-                        sub1, sub2 = st.columns(2)
-                        if sub1.button("−", key=f"but_moins_{team_code}_{i}"):
+                        col_nom, col_moins, col_plus = st.columns([3, 1, 1])
+                        col_nom.markdown(
+                            f"<div class='nom-joueur'>{joueur} — ⚽ {nb}</div>",
+                            unsafe_allow_html=True,
+                        )
+                        if col_moins.button("−", key=f"but_moins_{team_code}_{i}"):
                             st.session_state.buts_en_cours[joueur] = max(0, nb - 1)
                             st.rerun()
-                        if sub2.button("+", key=f"but_plus_{team_code}_{i}", type="primary"):
+                        if col_plus.button("+", key=f"but_plus_{team_code}_{i}", type="primary"):
                             st.session_state.buts_en_cours[joueur] = nb + 1
                             st.rerun()
-                    st.write("")
 
         if st.button("✅ Enregistrer le match"):
             if not equipe_a or not equipe_b:
