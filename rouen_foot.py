@@ -288,28 +288,24 @@ with tab_match:
             horizontal=True,
         )
 
-        # --- Décompte des buts par joueur (2 colonnes forcées, bouton + en vert/blanc) ---
+        # --- Décompte des buts par joueur : équipe A puis équipe B, boutons -/+ scopés proprement ---
         st.markdown(
             """
             <style>
-            /* Empêche les colonnes de cette section de s'empiler sur mobile */
-            .buts-section-marker + div[data-testid="stHorizontalBlock"],
-            .buts-section-marker + div[data-testid="stHorizontalBlock"] div[data-testid="stHorizontalBlock"] {
+            div[class*="st-key-but_row_"] div[data-testid="stHorizontalBlock"] {
                 flex-wrap: nowrap !important;
                 gap: 0.5rem !important;
             }
-            .buts-section-marker + div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"],
-            .buts-section-marker + div[data-testid="stHorizontalBlock"] div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+            div[class*="st-key-but_row_"] div[data-testid="stColumn"] {
                 width: 50% !important;
                 flex: 1 1 50% !important;
                 min-width: 0 !important;
             }
-            /* Boutons +/- de cette section uniquement : plus petits, centrés */
-            .buts-section-marker + div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] {
+            div[class*="st-key-but_row_"] div[data-testid="stButton"] {
                 display: flex;
                 justify-content: center;
             }
-            .buts-section-marker + div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button {
+            div[class*="st-key-but_row_"] div[data-testid="stButton"] button {
                 font-size: 1.3rem;
                 font-weight: 700;
                 padding: 0.3rem 0;
@@ -343,32 +339,29 @@ with tab_match:
 
         if joueurs_du_match:
             st.markdown("**⚽ Buts marqués**")
-            st.markdown('<div class="buts-section-marker"></div>', unsafe_allow_html=True)
 
-            col_buts_a, col_buts_b = st.columns(2)
-
-            for col, equipe_nom, equipe_liste in [
-                (col_buts_a, "🅰️ Équipe A", equipe_a),
-                (col_buts_b, "🅱️ Équipe B", equipe_b),
+            for team_code, equipe_nom, equipe_liste in [
+                ("A", "🅰️ Équipe A", equipe_a),
+                ("B", "🅱️ Équipe B", equipe_b),
             ]:
-                with col:
-                    if not equipe_liste:
-                        continue
-                    st.markdown(f"##### {equipe_nom}")
-                    for joueur in equipe_liste:
-                        nb = st.session_state.buts_en_cours.get(joueur, 0)
-                        st.markdown(
-                            f"<div style='text-align:center; font-weight:700;'>{joueur}<br>⚽ {nb}</div>",
-                            unsafe_allow_html=True,
-                        )
+                if not equipe_liste:
+                    continue
+                st.markdown(f"##### {equipe_nom}")
+                for i, joueur in enumerate(equipe_liste):
+                    nb = st.session_state.buts_en_cours.get(joueur, 0)
+                    st.markdown(
+                        f"<div style='font-weight:700;'>{joueur} — ⚽ {nb}</div>",
+                        unsafe_allow_html=True,
+                    )
+                    with st.container(key=f"but_row_{team_code}_{i}"):
                         sub1, sub2 = st.columns(2)
-                        if sub1.button("−", key=f"but_moins_{joueur}"):
+                        if sub1.button("−", key=f"but_moins_{team_code}_{i}"):
                             st.session_state.buts_en_cours[joueur] = max(0, nb - 1)
                             st.rerun()
-                        if sub2.button("+", key=f"but_plus_{joueur}", type="primary"):
+                        if sub2.button("+", key=f"but_plus_{team_code}_{i}", type="primary"):
                             st.session_state.buts_en_cours[joueur] = nb + 1
                             st.rerun()
-                        st.write("")
+                    st.write("")
 
         if st.button("✅ Enregistrer le match"):
             if not equipe_a or not equipe_b:
