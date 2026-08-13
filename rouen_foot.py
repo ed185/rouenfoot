@@ -375,6 +375,13 @@ with tab_match:
                             st.session_state.buts_en_cours[joueur] = nb + 1
                             st.rerun()
 
+            score_a = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_a)
+            score_b = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_b)
+            st.markdown(
+                f"<div style='text-align:center; font-size:1.4rem; font-weight:800; margin:0.5rem 0;'>Score : {score_a} − {score_b}</div>",
+                unsafe_allow_html=True,
+            )
+
         if st.button("✅ Enregistrer le match"):
             if not equipe_a or not equipe_b:
                 st.error("Les deux équipes doivent contenir au moins un joueur.")
@@ -382,6 +389,8 @@ with tab_match:
                 st.error(f"Un joueur ne peut pas être dans les deux équipes : {', '.join(doublons)}")
             else:
                 buteurs = {j: nb for j, nb in st.session_state.buts_en_cours.items() if nb > 0}
+                score_a = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_a)
+                score_b = sum(st.session_state.buts_en_cours.get(j, 0) for j in equipe_b)
                 data["matchs"].append(
                     {
                         "date": str(match_date),
@@ -389,6 +398,8 @@ with tab_match:
                         "equipe_b": equipe_b,
                         "gagnant": gagnant,
                         "buteurs": buteurs,
+                        "score_a": score_a,
+                        "score_b": score_b,
                     }
                 )
                 save_data(data)
@@ -406,7 +417,18 @@ with tab_match:
                 resultat = "Match nul"
             else:
                 resultat = f"Équipe {m['gagnant']} gagnante"
-            with st.expander(f"{m['date']} — Match #{idx} ({resultat})"):
+
+            score_a = m.get("score_a")
+            score_b = m.get("score_b")
+            score_txt = f" — {score_a} à {score_b}" if score_a is not None and score_b is not None else ""
+
+            with st.expander(f"{m['date']} — Match #{idx}{score_txt} ({resultat})"):
+                if score_a is not None and score_b is not None:
+                    st.markdown(
+                        f"<div style='text-align:center; font-size:1.3rem; font-weight:800; margin-bottom:0.5rem;'>{score_a} − {score_b}</div>",
+                        unsafe_allow_html=True,
+                    )
+
                 col1, col2 = st.columns(2)
                 col1.write("**Équipe A** " + ("🏆" if m["gagnant"] == "A" else "🤝" if m["gagnant"] == "Nul" else ""))
                 col1.write(", ".join(m["equipe_a"]))
