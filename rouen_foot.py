@@ -318,6 +318,11 @@ with tab_match:
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
+            div[class*="st-key-but_row_"] .but-count {
+                font-size: 1.3rem;
+                font-weight: 800;
+                color: #2e7d32;
+            }
             button[kind="primary"] {
                 background-color: #2e7d32 !important;
                 border-color: #2e7d32 !important;
@@ -358,7 +363,7 @@ with tab_match:
                     with st.container(key=f"but_row_{team_code}_{i}"):
                         col_nom, col_moins, col_plus = st.columns([3, 1, 1])
                         col_nom.markdown(
-                            f"<div class='nom-joueur'>{joueur} — ⚽ {nb}</div>",
+                            f"<div class='nom-joueur'>{joueur} — <span class='but-count'>⚽ {nb}</span></div>",
                             unsafe_allow_html=True,
                         )
                         if col_moins.button("−", key=f"but_moins_{team_code}_{i}"):
